@@ -1,5 +1,5 @@
 <template>
-  <transition-group name="slide" class="notificationList">
+  <transition-group tag="ul" name="fade" class="notificationList">
     <Notification :headline="notification.headline" :content="notification.content"
       :id="notification.id" v-for="notification in notifications" :key="notification.id" />
   </transition-group>
@@ -8,6 +8,7 @@
 <script>
 import store from '../../store';
 import Notification from '../Notification';
+
 
 export default {
   components: { Notification },
@@ -24,7 +25,8 @@ export default {
 
 <style scoped>
 .notificationList {
-  overflow: hidden;
+  width: 20vw;
+  min-width: 240px;
   position: absolute;
   display: flex;
   align-items: flex-end;
@@ -32,49 +34,38 @@ export default {
   gap: 5px;
   right: 0;
   top: 0;
-  width: 20vw;
-  min-width: 240px;
   box-sizing: border-box;
-  padding: 20px 20px;
+  margin: 20px;
   z-index: 0;
 }
 
-.slide-enter {
-  opacity: 1;
+/* 1. declare transition */
+.fade-move,
+.fade-leave-active {
+  transition: all 0.3s ease-out;
 }
 
-.slide-move {
-  transition: transform 1s;
+.fade-enter-active {
+  animation: appearAnimation 0.3s ease-out forwards;
+  transition: opacity 0.3s;
 }
 
-.slide-enter-active {
-  animation: slide-in 0.5s ease-out forwards;
-  transition: opacity 0.5s;
+.fade-leave-to {
+  opacity: 0;
+  transform: scaleY(0.01);
 }
 
-.slide-leave-active {
-  position: relative;
-  animation: slide-out 0.5s ease-out forwards;
-  transition: 0.5s;
+.fade-leave-active {
+  position: absolute;
 }
 
-@keyframes slide-in {
+@keyframes appearAnimation {
   from {
-    transform: translateX(100%);
+    transform: scaleY(0.01);
   }
 
   to {
-    transform: translateX(0px);
-  }
-}
-
-@keyframes slide-out {
-  from {
-    top: 0;
-  }
-
-  to {
-    top: -200px;
+    transform: scaleY(1);
   }
 }
 </style>

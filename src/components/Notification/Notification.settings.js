@@ -1,2 +1,2 @@
-export const maxContentLength = 219;
+export const maxContentLength = 150;
 export const defaultContent = 'Точка на карте';

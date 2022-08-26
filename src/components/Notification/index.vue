@@ -7,17 +7,25 @@
       <button class="notification_header_btn" @click="handleClose">x</button>
     </div>
     <section class="notification_content">
-      {{ content.length > 219 ? content.slice(0, 219) + '...' : content }}
+      {{ content.length > getMaxContentLength ? content.slice(0, getMaxContentLength) + '...' :
+          content
+      }}
     </section>
   </article>
 </template>
 
 <script>
 import store from '../../store';
+import { maxContentLength } from './Notification.settings';
 
 export default {
   props: ['headline', 'content', 'id'],
   name: 'Notification',
+  computed: {
+    getMaxContentLength() {
+      return maxContentLength;
+    },
+  },
   methods: {
     handleClose() {
       store.commit('removeNotification', { id: this.id });
@@ -30,7 +38,6 @@ export default {
 
 <style scoped>
 .notification {
-  height: fit-content;
   width: calc(100% - 30px);
   display: flex;
   flex-direction: column;
