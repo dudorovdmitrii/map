@@ -9,6 +9,7 @@ import { yandexMap, ymapMarker, loadYmap } from 'vue-yandex-maps';
 import {
   mkadCoords, PolygonCustomization, PolygonOptions, RouteCustomization, PolylineCustomization,
   PolylineOptions, centerCoords, notificationDuration, defaultHeadline, lastMarkerHeadline,
+  failMessage,
 } from './MapBlock.settings';
 import store from '../../store';
 
@@ -29,7 +30,10 @@ export default {
         zoom: 10,
       });
       this.addPolygon();
-      this.addLastPoint();
+
+      // Добавление объектов последней точки из localStorage
+      const lastPoint = localStorage.getItem('lastPoint');
+      if (lastPoint) this.tryAddMultipleObjects(JSON.parse(lastPoint), lastMarkerHeadline);
 
       this.map.events.add('click', async (event) => {
         const coords = event.get('coords');
@@ -37,12 +41,8 @@ export default {
         // Удаление предыдуших путей и маркера
         this.lastObjects.forEach(path => this.map.geoObjects.remove(path));
 
-        // Добавление маркера в точку клика
-        this.addMarker(coords);
-
-        // Добавление путей от кликнутой точки до МКАДа
-        await this.addPaths(coords);
-        this.showNotification(coords);
+        // Добавление объектов точки
+        this.tryAddMultipleObjects(coords);
       });
     },
 
@@ -68,20 +68,22 @@ export default {
 
     // Добавление путей до ближайшей точки МКАДа от кликнутой
     async addPaths(coords) {
+      // Сохранение координат последней точки
       localStorage.setItem('lastPoint', JSON.stringify(coords));
 
+      // Отображение индикатора загрузки
       store.commit('setLoading');
 
       const closestObject = ymaps.geoQuery(this.mkadMarkers).getClosestTo(coords);
       const closestObjectCoords = closestObject.geometry.getCoordinates();
 
-      // Добавление путя по дороге
+      // Добавление пути по дороге
       const route = new ymaps.multiRouter.MultiRoute(
         {
           referencePoints: [closestObjectCoords, coords],
         }, RouteCustomization);
 
-      await new Promise((resolve, reject) => {
+      const loaded = await new Promise((resolve, reject) => {
         route.model.events
           .add('requestsuccess', () => {
             resolve('success');
@@ -89,11 +91,16 @@ export default {
           .add('requestfail', () => {
             reject('error');
           });
+      }).catch(() => {
+        store.commit('setLoading');
+        return false;
       });
+
+      if (!loaded) return false;
 
       this.map.geoObjects.add(route);
 
-      // Добавление путя по воздуху
+      // Добавление пути по воздуху
       const polyline = new ymaps.Polyline(
         [
           closestObjectCoords,
@@ -103,9 +110,10 @@ export default {
       store.commit('setLoading');
 
       [this.lastObjects[1], this.lastObjects[2]] = [route, polyline];
+      return true;
     },
 
-    // Показ уведомления
+    // Отображение уведомления
     showNotification(coords, headline = defaultHeadline) {
       ymaps.geocode(coords).then((res) => {
         store.commit('incrementId');
@@ -129,15 +137,21 @@ export default {
       });
     },
 
-    // Добавление последней точки из localStorage
-    async addLastPoint() {
-      const lastPoint = localStorage.getItem('lastPoint');
-      if (lastPoint) {
-        const coords = JSON.parse(lastPoint);
-        await this.addPaths(coords);
-        this.addMarker(coords);
-        this.showNotification(coords, lastMarkerHeadline);
+    // Попытка добвления объектов на карту
+    async tryAddMultipleObjects(coords, notificationHeadline) {
+      // Добавление путей от кликнутой точки до МКАДа
+      const success = await this.addPaths(coords);
+      if (!success) {
+        // eslint-disable-next-line no-alert
+        alert(failMessage);
+        return;
       }
+
+      // Добавление маркера в точку клика
+      this.addMarker(coords);
+
+      // Добавление уведомления
+      this.showNotification(coords, notificationHeadline);
     },
   },
 

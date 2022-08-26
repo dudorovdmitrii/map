@@ -1,4 +1,6 @@
 /* eslint-disable max-len */
+export const failMessage = 'Не удалось построить маршрут';
+
 export const centerCoords = [55.74819885880938, 37.61917292773435];
 
 export const notificationDuration = 2000;

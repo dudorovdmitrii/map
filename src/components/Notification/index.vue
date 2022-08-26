@@ -30,15 +30,15 @@ export default {
 
 <style scoped>
 .notification {
-  max-height: 150px;
-  width: calc(20vw - 60px);
-  z-index: 100;
+  height: fit-content;
+  width: calc(100% - 30px);
   display: flex;
   flex-direction: column;
-  background: white;
+  background: var(--white);
   padding: 20px 15px;
   border-radius: 2px;
   box-shadow: 0 0 5px var(--black-shadow);
+  z-index: 100;
 }
 
 .notification_header {

@@ -27,14 +27,16 @@ export default {
   overflow: hidden;
   position: absolute;
   display: flex;
+  align-items: flex-end;
   flex-direction: column;
   gap: 5px;
   right: 0;
   top: 0;
   width: 20vw;
-  height: 100vh;
+  min-width: 240px;
   box-sizing: border-box;
   padding: 20px 20px;
+  z-index: 0;
 }
 
 .slide-enter {
@@ -51,14 +53,14 @@ export default {
 }
 
 .slide-leave-active {
-  position: absolute;
+  position: relative;
   animation: slide-out 0.5s ease-out forwards;
   transition: 0.5s;
 }
 
 @keyframes slide-in {
   from {
-    transform: translateX(calc(100% - 60px));
+    transform: translateX(100%);
   }
 
   to {
@@ -72,7 +74,7 @@ export default {
   }
 
   to {
-    top: -220px;
+    top: -200px;
   }
 }
 </style>
