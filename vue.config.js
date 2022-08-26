@@ -12,4 +12,5 @@ module.exports = {
       .use('vue-svg-loader')
       .loader('vue-svg-loader');
   },
+  publicPath: '/map/',
 };
